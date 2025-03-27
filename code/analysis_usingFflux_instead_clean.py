@@ -112,7 +112,7 @@ for s in range(4):
     ax.axvline(x=0,color='gray',lw=2,ls='--')
     ax.set_ylabel(r'Pearson r$^2$',fontsize=20)
     ax.set_xlabel('Lag [years]',fontsize=20)
-    fig.savefig('LAGGED_correlation_Fflux_S0_'+str(s)+'.png',dpi=300)
+    fig.savefig('../Figures/LAGGED_correlation_Fflux_S0_'+str(s)+'.png',dpi=300)
     #
     # FIGURES S1-S2: FRESHWATER TRANSPORT - AMOC REGRESSION
     #
@@ -128,4 +128,4 @@ for s in range(4):
     ax.legend()
     ax.set_ylabel(r'AMOC - F$^{34\degree S}_{transport}$  (Sv / Sv)',fontsize=20)
     ax.set_xlabel('CO2 forcing',fontsize=20)
-    fig.savefig('AMOC_Ftransport_slope_S0_'+str(s)+'_v2.png',dpi=300)
+    fig.savefig('../Figures/AMOC_Ftransport_slope_S0_'+str(s)+'_v2.png',dpi=300)

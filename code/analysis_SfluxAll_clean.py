@@ -171,12 +171,12 @@ for lat_n in [60]:
     if conv:
         ylab=fig.text(0.5,0.05,r'Salt Transport Convergence [g/kg $\cdot$ Sv]',ha='center',va='center',fontsize=18)
         extra_artists.extend([xlab,ylab])
-        fig.savefig('Sflux_1000_convergence_AMOC_scatter_slopes_annual_lat'+str(plat)+'.png',dpi=300,
+        fig.savefig('../Figures/Sflux_1000_convergence_AMOC_scatter_slopes_annual_lat'+str(plat)+'.png',dpi=300,
                     bbox_inches='tight',bbox_extra_artists=extra_artists)
     else:
         ylab=fig.text(0.5,0.05,r'Salt Transport [g/kg $\cdot$ Sv]',ha='center',va='center',fontsize=18)
         extra_artists.extend([xlab,ylab])
-        fig.savefig('Sflux_1000_AMOC_scatter_slopes_annual'+str(plat)+'.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+        fig.savefig('../Figures/Sflux_1000_AMOC_scatter_slopes_annual'+str(plat)+'.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
     #
     # ###################################################################
     #
@@ -263,7 +263,7 @@ for lat_n in [60]:
         extra_artists.append(txt1)
 
     fig.subplots_adjust(wspace=0.1)
-    fig.savefig('AMOC_Sconv_1000_'+str(plat)+'N_60N_slope_and_convergence.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+    fig.savefig('../Figures/AMOC_Sconv_1000_'+str(plat)+'N_60N_slope_and_convergence.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
     # ######################################
     # FIGURE S9: SALT TRANSPORT CONVERGENCE 40N-60N AMOC REGRESSION AS A FUNCTION OF SPG RHO
     # #####################################
@@ -359,8 +359,8 @@ for lat_n in [60]:
     if rho_abs:
         ax.set_xlim(np.nanmax([np.nanmax(rho_axis),np.nanmax(rho_axis_1pct[15:-15])]),np.nanmin([np.nanmin(rho_axis),np.nanmin(rho_axis_1pct[15:-15])]))
         ax.set_xlabel(r'SPG potential density [kg m$^{-3}$]',fontsize=20)
-        fig.savefig('AMOC_Sconv_1000_'+str(plat)+'N_60N_slope_and_convergence_as_a_function_of_SPG_rho_abs.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+        fig.savefig('../Figures/AMOC_Sconv_1000_'+str(plat)+'N_60N_slope_and_convergence_as_a_function_of_SPG_rho_abs.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
     else:
         ax.set_xlim(np.nanmin([np.nanmin(rho_axis),np.nanmin(rho_axis_1pct[15:-15])]),np.nanmax([np.nanmax(rho_axis),np.nanmax(rho_axis_1pct[15:-15])]))
         ax.set_xlabel('Percentage reduction in SPG potential density anomaly [%]',fontsize=20)
-        fig.savefig('AMOC_Sconv_1000_'+str(plat)+'N_60N_slope_and_convergence_as_a_function_of_SPG_rho.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+        fig.savefig('../Figures/AMOC_Sconv_1000_'+str(plat)+'N_60N_slope_and_convergence_as_a_function_of_SPG_rho.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)

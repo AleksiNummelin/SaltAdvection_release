@@ -90,7 +90,7 @@ if __name__ == '__main__':
     IpctCO2=[285]
     for j in range(1,165):
         IpctCO2.append(IpctCO2[-1]+0.01*IpctCO2[-1])
-    IpctCO2=np.array(IpctCO2)/280
+    IpctCO2=np.array(IpctCO2)/285
     IpctCO2_axis=[]
     for j in range(0,165-30,1):
         IpctCO2_axis.append(np.mean(IpctCO2[j:j+30]))
@@ -120,26 +120,28 @@ if __name__ == '__main__':
         '1pct':{'name':[['N1PCT_f19_tn14_20190626','N1PCT_f19_tn14_20190712']],'path':[[path2,path2]],'nyears':1980,'nyears2':[[1440,600]]}
     }
     # BELOW WE DEFINE SOME BLOM (NORESM2-LM) SPECIFIC METRICS
-    grid_blom=xr.open_dataset('/projects/NS9869K/noresm/topo_beta/grid_tnx1v4_20170622.nc')
-    mask=np.logical_and(np.logical_and(np.logical_and(grid_blom.plat>50,
+    if compute_data:
+        grid_blom=xr.open_dataset('/projects/NS9869K/noresm/topo_beta/grid_tnx1v4_20170622.nc')
+        mask=np.logical_and(np.logical_and(np.logical_and(grid_blom.plat>50,
                                                       grid_blom.plat<60),
                                        np.logical_and(grid_blom.plon>-50,
                                                       grid_blom.plon<-40)),
                         grid_blom.pdepth>2000)
-    jinds,iinds=np.where(mask)
-    jinds=xr.DataArray(jinds,dims='points')
-    iinds=xr.DataArray(iinds,dims='points')
-    iinds_34S = xr.DataArray(np.arange(55,130).astype(int),dims='points')
-    jinds_34S =	xr.DataArray(104*np.ones(iinds_34S.size).astype(int),dims='points')
+        jinds,iinds=np.where(mask)
+        jinds=xr.DataArray(jinds,dims='points')
+        iinds=xr.DataArray(iinds,dims='points')
+        iinds_34S = xr.DataArray(np.arange(55,130).astype(int),dims='points')
+        jinds_34S =	xr.DataArray(104*np.ones(iinds_34S.size).astype(int),dims='points')
+        #
+        mertra     = butils.read_mertra('../../mertra_index_tnx1v4_20190615.dat')
+        basin_mask = xr.open_dataset('../../ocean_regions_tnx1v4_20190729.nc')
+        lat        = np.arange(-34,61)
+        mertra_atlantic = {}
+        for l in lat:
+            l_mask = basin_mask.region.isel(x=xr.DataArray(mertra[l][:,0],dims='points'),y=xr.DataArray(mertra[l][:,1],dims='points'))
+            linds=np.where(l_mask==2)[0]
+            mertra_atlantic[l] = mertra[l][linds,:]
     #
-    mertra     = butils.read_mertra('mertra_index_tnx1v4_20190615.dat')
-    basin_mask = xr.open_dataset('ocean_regions_tnx1v4_20190729.nc')
-    lat        = np.arange(-34,61)
-    mertra_atlantic = {}
-    for l in lat:
-        l_mask = basin_mask.region.isel(x=xr.DataArray(mertra[l][:,0],dims='points'),y=xr.DataArray(mertra[l][:,1],dims='points'))
-        linds=np.where(l_mask==2)[0]
-        mertra_atlantic[l] = mertra[l][linds,:]
     # DEFINE A FEW DICTS THAT WILL HOLD THE DATA
     Sflux_1000_all = {}
     AMOC           = {}
@@ -268,13 +270,13 @@ if __name__ == '__main__':
             Fflux[case].to_dataset(name='Fflux').to_netcdf('/projects/NS9874K/AMOC/Fflux_'+case+'.nc')
         else:
             # LOAD DATA INSTEAD
-            AMOC[case]      = xr.open_dataset('/projects/NS9874K/AMOC/AMOC_'+case+'.nc').AMOC.load()
-            Sflux[case]     = xr.open_dataset('/projects/NS9874K/AMOC/Sflux_'+case+'.nc').Sflux.load()
-            Sflux_all[case] = xr.open_dataset('/projects/NS9874K/AMOC/Sflux_all_'+case+'.nc').Sflux_all.load()
-            Sflux_1000_all[case] = xr.open_dataset('/projects/NS9874K/AMOC/Sflux_1000_all_'+case+'.nc').Sflux_1000_all.load()
-            SST_SPG[case]   = xr.open_dataset('/projects/NS9874K//AMOC/SST_SPG_'+case+'.nc').SST_SPG.load()
-            SSS_SPG[case]   = xr.open_dataset('/projects/NS9874K/AMOC/SSS_SPG_'+case+'.nc').SSS_SPG.load()
-            Fflux[case]     = xr.open_dataset('/projects/NS9874K/AMOC/Fflux_'+case+'.nc').Fflux.load()
+            AMOC[case]      = xr.open_dataset('../data/NorESM2-LM/AMOC_'+case+'.nc').AMOC.load()
+            Sflux[case]     = xr.open_dataset('../data/NorESM2-LM/Sflux_'+case+'.nc').Sflux.load()
+            Sflux_all[case] = xr.open_dataset('../data/NorESM2-LM/Sflux_all_'+case+'.nc').Sflux_all.load()
+            Sflux_1000_all[case] = xr.open_dataset('../data/NorESM2-LM/Sflux_1000_all_'+case+'.nc').Sflux_1000_all.load()
+            SST_SPG[case]   = xr.open_dataset('../data/NorESM2-LM/SST_SPG_'+case+'.nc').SST_SPG.load()
+            SSS_SPG[case]   = xr.open_dataset('../data/NorESM2-LM/SSS_SPG_'+case+'.nc').SSS_SPG.load()
+            Fflux[case]     = xr.open_dataset('../data/NorESM2-LM/Fflux_'+case+'.nc').Fflux.load()
 
     if compute_ecco:
         path_ecco='/projects/NS9874K/anu074/ECCO/'
@@ -340,25 +342,20 @@ if __name__ == '__main__':
             xr.merge([T_out.to_dataset(name='SST_SPG'),S_out.to_dataset(name='SSS_SPG')]).to_netcdf('/projects/NS9874K/anu074/ECCO_SST_SSS_SPG_JFM.nc')
     #######################
     # Load the ECCO data
-    ECCO_data = xr.open_dataset('/projects/NS9874K/anu074/ECCO_AMOC_Sflux_new2.nc')
+    ECCO_data = xr.open_dataset('../data/ECCO/ECCO_AMOC_Sflux_new2.nc')
     AMOC['ecco'] = ECCO_data.AMOC
     Sflux['ecco'] = ECCO_data.Sflux
-    SST_SPG['ecco'] = xr.open_dataset('/projects/NS9874K/anu074/ECCO_SST_SSS_SPG_JFM.nc').SST_SPG
-    SSS_SPG['ecco'] = xr.open_dataset('/projects/NS9874K/anu074/ECCO_SST_SSS_SPG_JFM.nc').SSS_SPG
+    SST_SPG['ecco'] = xr.open_dataset('../data/ECCO/ECCO_SST_SSS_SPG_JFM.nc').SST_SPG
+    SSS_SPG['ecco'] = xr.open_dataset('../data/ECCO/ECCO_SST_SSS_SPG_JFM.nc').SSS_SPG
     # Load the ORAS5 data
-    ORAS5 = xr.open_mfdataset(sorted(glob.glob('/projects/NS9874K/anu074/ORAS5/AMOC_Sflux*_new.nc')))
-    ORAS5 = ORAS5.rename({'time_counter':'time'})
-    ORAS5 = ORAS5.groupby('time.year').mean().compute()
+    ORAS5 = xr.open_dataset('../data/ORAS5/AMOC_Sflux_1979_2018.nc')
     #
-    ORAS5_1000 = xr.open_mfdataset(sorted(glob.glob('/projects/NS9874K/anu074/ORAS5/AMOC_Sflux*_new_1000.nc')))
-    ORAS5_1000 = ORAS5_1000.rename({'time_counter':'time'})
-    ORAS5_1000 = ORAS5_1000.groupby('time.year').mean().compute()
-    ORAS5_1000 = ORAS5_1000.expand_dims({'ens':np.array([0])})
+    ORAS5_1000 = xr.open_dataset('../data/ORAS5/AMOC_Sflux_0_1000_1979_2018.nc')
     #
     Sflux['ORAS5'] = ORAS5.Sflux.expand_dims({'ens':np.array([0])})/1E6
     AMOC['ORAS5']  = ORAS5.AMOC.expand_dims({'ens':np.array([0])})/1E6
-    SST_SPG['ORAS5'] = xr.open_dataset('/projects/NS9874K/anu074/ORAS5/SPG_SSS_SST_1979_2018_JFM.nc').SST_SPG.isel(deptht=0)
-    SSS_SPG['ORAS5'] = xr.open_dataset('/projects/NS9874K/anu074/ORAS5/SPG_SSS_SST_1979_2018_JFM.nc').SSS_SPG.isel(deptht=0)
+    SST_SPG['ORAS5'] = xr.open_dataset('../data/ORAS5/SPG_SSS_SST_1979_2018_JFM.nc').SST_SPG.isel(deptht=0)
+    SSS_SPG['ORAS5'] = xr.open_dataset('../data/ORAS5/SPG_SSS_SST_1979_2018_JFM.nc').SSS_SPG.isel(deptht=0)
     # ALL DATA IS NOW LOADED
     # ----------------------
     #
@@ -525,7 +522,7 @@ if __name__ == '__main__':
         txt1=ax.text(0.0, 1.02, string.ascii_lowercase[a],transform=ax.transAxes, fontsize=20)
         extra_artists.append(txt1)
     fig.subplots_adjust(wspace=0.05)
-    fig.savefig('Sflux_AMOC_scatter_slopes_annual.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+    fig.savefig('../Figures/Sflux_AMOC_scatter_slopes_annual.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
     #
     # Sflux - AMOC relation
     #################################################
@@ -652,10 +649,10 @@ if __name__ == '__main__':
     if rho_abs:
         ax2.set_xlim(np.nanmax([np.nanmax(rho_axis),np.nanmax(rho_axis_1pct[15:-15])]),np.nanmin([np.nanmin(rho_axis),np.nanmin(rho_axis_1pct[15:-15])]))
         ax2.set_xlabel(r'SPG potential density [kg m$^{-3}$]',fontsize=20)
-        fig.savefig('AMOC_Stransport_slope_as_function_of_CO2_and_SPG_density_absolute_new.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+        fig.savefig('../Figures/AMOC_Stransport_slope_as_function_of_CO2_and_SPG_density_absolute_new.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
     else:
         ax2.set_xlabel('Reduction in SPG potential density anomaly [%]',fontsize=20)
-        fig.savefig('AMOC_Stransport_slope_as_function_of_CO2_and_SPG_density_new.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+        fig.savefig('../Figures/AMOC_Stransport_slope_as_function_of_CO2_and_SPG_density_new.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
     #
     # PLOT DIFFERENT TIMESERIES
     # FIGURES S5-S6
@@ -757,22 +754,22 @@ if __name__ == '__main__':
     #
     xlab=fig1.text(0.5,0.05,r'Salt Transport [g/kg $\cdot$ Sv]',fontsize=20,ha='center',va='center')
     ylab=fig1.text(0.05,0.5,r'$\sigma_0$ [g/kg]',fontsize=20,rotation='vertical',ha='center',va='center')
-    fig1.savefig('rho_Sflux_scatter.png',dpi=300,bbox_extra_artists=[xlab,ylab])
+    fig1.savefig('../Figures/rho_Sflux_scatter.png',dpi=300,bbox_extra_artists=[xlab,ylab])
     xlab=fig2.text(0.5,0.05,r'$\sigma_0$ [g/kg]',fontsize=20,ha='center',va='center')
     ylab=fig2.text(0.05,0.5,r'AMOC @26N [Sv]',fontsize=20,rotation='vertical',ha='center',va='center')
-    fig2.savefig('rho_AMOC_scatter.png',dpi=300,bbox_extra_artists=[xlab,ylab])
+    fig2.savefig('../Figures/rho_AMOC_scatter.png',dpi=300,bbox_extra_artists=[xlab,ylab])
     xlab=fig3.text(0.5,0.05,r'Salt Transport [g/kg $\cdot$ Sv]',fontsize=20,ha='center',va='center')
     ylab=fig3.text(0.05,0.5,r'AMOC @26N [Sv]',fontsize=20,rotation='vertical',ha='center',va='center')
-    fig3.savefig('Stransport_AMOC_scatter.png',dpi=300,bbox_extra_artists=[xlab,ylab])
+    fig3.savefig('../Figures/Stransport_AMOC_scatter.png',dpi=300,bbox_extra_artists=[xlab,ylab])
     ylab1=fig12.text(0.05,0.5,r'$\sigma_0$ [g/kg]',fontsize=20,rotation='vertical',ha='center',va='center')
     ylab2=fig12.text(0.96,0.5,r'Salt Transport [g/kg $\cdot$ Sv]',fontsize=20,rotation='vertical',ha='center',va='center')
-    fig12.savefig('rho_Sflux_timeseries.png',dpi=300,bbox_extra_artists=[ylab1,ylab2])
+    fig12.savefig('../Figures/rho_Sflux_timeseries.png',dpi=300,bbox_extra_artists=[ylab1,ylab2])
     ylab1=fig22.text(0.05,0.5,r'$\sigma_0$ [g/kg]',fontsize=20,rotation='vertical',ha='center',va='center')
     ylab2=fig22.text(0.96,0.5,r'AMOC @26N [Sv]',fontsize=20,rotation='vertical',ha='center',va='center')
-    fig22.savefig('rho_AMOC_timeseries.png',dpi=300,bbox_extra_artists=[ylab1,ylab2])
+    fig22.savefig('../Figures/rho_AMOC_timeseries.png',dpi=300,bbox_extra_artists=[ylab1,ylab2])
     ylab1=fig32.text(0.05,0.5,r'Salt Transport [g/kg $\cdot$ Sv]',fontsize=20,rotation='vertical',ha='center',va='center')
     ylab2=fig32.text(0.96,0.5,r'AMOC @26N [Sv]',fontsize=20,rotation='vertical',ha='center',va='center')
-    fig32.savefig('Stransport_AMOC_timeseries.png',dpi=300,bbox_extra_artists=[ylab1,ylab2])
+    fig32.savefig('../Figures/Stransport_AMOC_timeseries.png',dpi=300,bbox_extra_artists=[ylab1,ylab2])
     #
     #
     #################################
@@ -823,7 +820,7 @@ if __name__ == '__main__':
     axes[2,0].set_title(r'Salt transport convergence SNR')
     std_mean=np.mean(stds['x1.0'],axis=0)
     SNR0=abs(trends['x1.0'])/stds['x1.0']
-    print(std_mean)
+    #print(std_mean)
     dy2=30
     SNR_all=[]
     for c,case in enumerate(names.keys()):
@@ -853,64 +850,75 @@ if __name__ == '__main__':
     xlab=axes[-1,0].set_xlabel(r'Time [years]',fontsize=20)
     xlab2=axes[-1,1].set_xlabel(r'CO$_2$ forcing',fontsize=20)
     fig.subplots_adjust(wspace=0.05)
-    fig.savefig('Signal_to_noise_ratio_running_'+str(dy)+'_years.png',dpi=300, bbox_extra_artists=[ylab1,xlab])
+    fig.savefig('../Figures/Signal_to_noise_ratio_running_'+str(dy)+'_years.png',dpi=300, bbox_extra_artists=[ylab1,xlab])
         
     ###########################
     # FIGURE S7: HOVMOELLER PLOT (DEPTH-TIME) OF
     # OVERTURNING STREAMFUNCTION AND SALINITY AT 34S
-    case='x4.0'
-    for n,name in enumerate(names[case]['name'][:3]):
-        print(n,name)
-        filelist=sorted(glob.glob(names[case]['path'][n]+name+'/ocn/hist/'+name+'.*.hm.*-*.nc'))[:100*12]
-        print(len(filelist))
-        data=xr.open_mfdataset(filelist,combine='nested',concat_dim='time',chunks={'time':120})
-        if n==0:
-            AMOC_z=(data['mmflxd'].isel(region=0).sel(lat=-34).groupby('time.year').mean()/1E9).expand_dims('ens').compute()
-            S_zmean=((data.salnlvl.isel(y=jinds_34S,x=iinds_34S)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points') \
-                /(data.salnlvl.isel(y=jinds_34S,x=iinds_34S).notnull().astype(float)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points')). \
-                groupby('time.year').mean().expand_dims('ens').compute()
-            AMOC_z = AMOC_z.assign_coords({'year':range(AMOC_z.year.size)})
-            S_zmean=S_zmean.assign_coords({'year':range(S_zmean.year.size)})
-        else:
-            AMOC_z_dum = (data['mmflxd'].isel(region=0).sel(lat=-34).groupby('time.year').mean()/1E9).expand_dims('ens').compute()
-            S_zmean_dum=((data.salnlvl.isel(y=jinds_34S,x=iinds_34S)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points') \
-                /(data.salnlvl.isel(y=jinds_34S,x=iinds_34S).notnull().astype(float)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points')). \
-                groupby('time.year').mean().expand_dims('ens').compute()
-            AMOC_z_dum = AMOC_z_dum.assign_coords({'year':range(AMOC_z_dum.year.size)})
-            S_zmean_dum=S_zmean_dum.assign_coords({'year':range(S_zmean_dum.year.size)})
-            AMOC_z  = xr.concat([AMOC_z_dum,AMOC_z],dim='ens')
-            S_zmean = xr.concat([S_zmean_dum,S_zmean],dim='ens') 
+    if False:
+        from scipy import interpolate
+        case='x4.0'
+        for n,name in enumerate(names[case]['name'][:3]):
+            print(n,name)
+            filelist=sorted(glob.glob(names[case]['path'][n]+name+'/ocn/hist/'+name+'.*.hm.*-*.nc'))[:100*12]
+            print(len(filelist))
+            data=xr.open_mfdataset(filelist,combine='nested',concat_dim='time',chunks={'time':120})
+            if n==0:
+                AMOC_z=(data['mmflxd'].isel(region=0).sel(lat=-34).groupby('time.year').mean()/1E9).expand_dims('ens').compute()
+                S_zmean=((data.salnlvl.isel(y=jinds_34S,x=iinds_34S)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points') \
+                    /(data.salnlvl.isel(y=jinds_34S,x=iinds_34S).notnull().astype(float)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points')). \
+                    groupby('time.year').mean().expand_dims('ens').compute()
+                AMOC_z = AMOC_z.assign_coords({'year':range(AMOC_z.year.size)})
+                S_zmean=S_zmean.assign_coords({'year':range(S_zmean.year.size)})
+            else:
+                AMOC_z_dum = (data['mmflxd'].isel(region=0).sel(lat=-34).groupby('time.year').mean()/1E9).expand_dims('ens').compute()
+                S_zmean_dum=((data.salnlvl.isel(y=jinds_34S,x=iinds_34S)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points') \
+                    /(data.salnlvl.isel(y=jinds_34S,x=iinds_34S).notnull().astype(float)*grid_blom.parea.isel(y=jinds_34S,x=iinds_34S)).sum('points')). \
+                    groupby('time.year').mean().expand_dims('ens').compute()
+                AMOC_z_dum = AMOC_z_dum.assign_coords({'year':range(AMOC_z_dum.year.size)})
+                S_zmean_dum=S_zmean_dum.assign_coords({'year':range(S_zmean_dum.year.size)})
+                AMOC_z  = xr.concat([AMOC_z_dum,AMOC_z],dim='ens')
+                S_zmean = xr.concat([S_zmean_dum,S_zmean],dim='ens') 
+        #
+        AMOC_1depth=[]
+        AMOC_5depth=[]
+        AMOC_m1depth=[]
+        AMOC_maxdepth=[]
+        for year in AMOC_z.year:
+            dum=interpolate.interp1d(AMOC_z.mean('ens').isel(year=year.values)[20:60],AMOC_z.depth[20:60].values+AMOC_z.depth.diff(dim='depth')[20:60].values)
+            AMOC_maxdepth.append(dum(AMOC_z.mean('ens').isel(year=year.values).max()))
+            AMOC_1depth.append(dum(1.0))
+            AMOC_m1depth.append(dum(-.5))
+            AMOC_5depth.append(dum(5.0))
+        #
+        AMOC_maxdepth = xr.DataArray(np.array(AMOC_maxdepth),coords={'year':AMOC_z.year})
+        AMOC_1depth   = xr.DataArray(np.array(AMOC_1depth),coords={'year':AMOC_z.year})
+        AMOC_m1depth  = xr.DataArray(np.array(AMOC_m1depth),coords={'year':AMOC_z.year})
+        AMOC_5depth   = xr.DataArray(np.array(AMOC_5depth),coords={'year':AMOC_z.year})
+        #
+        xr.merge([AMOC_z.to_dataset(name='AMOC_z'),
+                  S_zmean.to_dataset(name='S_zmean'),
+                  AMOC_maxdepth.to_dataset(name='AMOC_maxdepth'),
+                  AMOC_1depth.to_dataset(name='AMOC_1depth'),
+                  AMOC_m1depth.to_dataset(name='AMOC_m1depth'),
+                  AMOC_5depth.to_dataset(name='AMOC_5depth')]).to_netcdf('../data/NorESM2-LM/AMOC_S_t-z_at34S.nc')
     #
-    AMOC_1depth=[]
-    AMOC_5depth=[]
-    AMOC_m1depth=[]
-    AMOC_maxdepth=[]
-    for year in AMOC_z.year:
-        dum=interpolate.interp1d(AMOC_z.mean('ens').isel(year=year.values)[20:60],AMOC_z.depth[20:60].values+AMOC_z.depth.diff(dim='depth')[20:60].values)
-        AMOC_maxdepth.append(dum(AMOC_z.mean('ens').isel(year=year.values).max()))
-        AMOC_1depth.append(dum(1.0))
-        AMOC_m1depth.append(dum(-.5))
-        AMOC_5depth.append(dum(5.0))
-    #
-    AMOC_maxdepth=xr.DataArray(np.array(AMOC_maxdepth),coords={'year':AMOC_z.year})
-    AMOC_1depth=xr.DataArray(np.array(AMOC_1depth),coords={'year':AMOC_z.year})
-    AMOC_m1depth=xr.DataArray(np.array(AMOC_m1depth),coords={'year':AMOC_z.year})
-    AMOC_5depth=xr.DataArray(np.array(AMOC_5depth),coords={'year':AMOC_z.year})
+    AMOC_S_tz = xr.open_dataset('../data/NorESM2-LM/AMOC_S_t-z_at34S.nc')
     #
     fig,ax = plt.subplots(nrows=1,ncols=1,figsize=(10,5),sharex=True,sharey=True)
-    AMOC_z.mean('ens').T.plot(ax=ax,
+    AMOC_S_tz.AMOC_z.mean('ens').T.plot(ax=ax,
                               cbar_kwargs={'label':r'AMOC@34$\degree$S [Sv]'})
-    cs1=S_zmean.mean('ens').T.plot.contour(ax=ax,levels=[34.4,34.6,34.8,34.9,35],colors='k')
-    AMOC_1depth.plot(ax=ax,color='C0',lw=2,ls='--')
-    AMOC_m1depth.plot(ax=ax,color='C0',lw=2,ls=':')
-    AMOC_5depth.plot(ax=ax,color='C0',lw=2,ls='-.')
-    AMOC_maxdepth.plot(ax=ax,color='C0',lw=2,ls='-')
+    cs1=AMOC_S_tz.S_zmean.mean('ens').T.plot.contour(ax=ax,levels=[34.4,34.6,34.8,34.9,35],colors='k')
+    AMOC_S_tz.AMOC_1depth.plot(ax=ax,color='C0',lw=2,ls='--')
+    AMOC_S_tz.AMOC_m1depth.plot(ax=ax,color='C0',lw=2,ls=':')
+    AMOC_S_tz.AMOC_5depth.plot(ax=ax,color='C0',lw=2,ls='-.')
+    AMOC_S_tz.AMOC_maxdepth.plot(ax=ax,color='C0',lw=2,ls='-')
     ax.set_ylim(5000,0)
     ax.set_ylabel('Depth [m]', fontsize=18)
     ax.set_xlabel('Time [year]',fontsize=18)
     ax.set_title('')
     ax.clabel(cs1)
-    fig.savefig('AMOC_Salt_depth_time_at34S_v2.png',dpi=300)
+    fig.savefig('../Figures/AMOC_Salt_depth_time_at34S_v2.png',dpi=300)
     #
     ######################################################
     #
@@ -977,7 +985,7 @@ if __name__ == '__main__':
     for a,ax in enumerate([ax1,ax2]):
         txt1=ax.text(0.0, 1.02, string.ascii_lowercase[a],transform=ax.transAxes, fontsize=20)
         extra_artists.append(txt1)
-    fig.savefig('AMOC_Sflux_0crossing_and_LAGGED_correlation_annual.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
+    fig.savefig('../Figures/AMOC_Sflux_0crossing_and_LAGGED_correlation_annual.png',dpi=300,bbox_inches='tight',bbox_extra_artists=extra_artists)
     #print out the mean lag
     for c,case in enumerate(list(names.keys())):
-        print(case,str(np.sum(lags*abs(np.array(r_all[case]).squeeze()))/np.sum(abs(np.array(r_all[case])).squeeze())))
+        print('Mean Lag',case,str(np.sum(lags*abs(np.array(r_all[case]).squeeze()))/np.sum(abs(np.array(r_all[case])).squeeze())))
